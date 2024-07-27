@@ -8,7 +8,22 @@
              root:ViewModelLocator.AutoWireViewModel="True"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <DataTemplate x:Key="MessagesListBox">
+            <Border BorderThickness="3"
+                    BorderBrush="Blue">
+                <StackPanel>
+                    <TextBlock Text="{Binding Message}"/>
+                    <TextBlock Text="{Binding Epoch}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>    
+    </UserControl.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <DataGrid x:Name="historyDataGrid"
                   AutoGenerateColumns="False"
                   EnableRowVirtualization="True"
@@ -29,6 +44,8 @@
                                     Width="SizeToHeader"/>
             </DataGrid.Columns>
         </DataGrid>
-
+        <ListBox ItemsSource="{Binding Messages}"
+                 ItemTemplate="{StaticResource MessagesListBox}"
+                 Grid.Row="1"/>
     </Grid>
 </UserControl>
