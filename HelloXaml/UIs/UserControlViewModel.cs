@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,24 +16,66 @@ namespace HelloXaml.UIs
         public string Epoch { get; set; }
     }
 
-    public class UserControlViewModel
+    public class UserControlViewModel : INotifyPropertyChanged
     {
-
-        public ObservableCollection<MessageModel> Messages { get; set; }
-
-        #region Commands
-        public RelayCommand DeleteCommand { get; set; }
+        private System.Timers.Timer timer = new System.Timers.Timer(5000);
+        #region Messages and SelectedMessage
+        private ObservableCollection<MessageModel> messages = new ObservableCollection<MessageModel>();
+        public ObservableCollection<MessageModel> Messages { 
+            get => messages;
+            set
+            {
+                if (messages != null)
+                {
+                    messages = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs("Messages"));
+                }
+            }
+        }
+        
+        private MessageModel selectedMessage;
         #endregion
 
-        #region To Delete An Entity
-        private MessageModel selectedMessage;
+        #region NotificationMessage
+
+        private string notificationMessage;
+        public string NotificationMessage 
+        { 
+            get => notificationMessage; 
+            set
+            {
+                if (notificationMessage != value) 
+                {
+                    notificationMessage = value;
+                    PropertyChanged(this, new PropertyChangedEventArgs(nameof(NotificationMessage)));
+
+                }
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Selected entity
+        /// </summary>
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        #region Command Region
+
+        #region Relays
+        public RelayCommand DeleteMessageCommand { get; set; }
+        #endregion
+
         public MessageModel SelectedMessage { 
             get => selectedMessage; 
             set {
-                selectedMessage = value; 
-                DeleteCommand.RaiseCanExecuteChanged();
+                selectedMessage = value;
+                DeleteMessageCommand.RaiseCanExecuteChanged();
+                //PropertyChanged(this, new PropertyChangedEventArgs("Messages"));
             }
         }
+
         public void OnDelete()
         {
             //...args to delete dari list of N
@@ -43,7 +86,14 @@ namespace HelloXaml.UIs
 
         public UserControlViewModel()
         {
-            DeleteCommand = new RelayCommand(OnDelete, CanDelete);
+            DeleteMessageCommand = new RelayCommand(OnDelete, CanDelete);
+            timer.Elapsed += (s, e) => NotificationMessage = "At the tone time will be: " + DateTime.Now.ToLocalTime() + " beep. ";
+
+            timer.Start();
+        }
+
+        public void LoadMessagesManually()
+        {
             Messages = new ObservableCollection<MessageModel>();
             Messages.Add(new MessageModel
             {
